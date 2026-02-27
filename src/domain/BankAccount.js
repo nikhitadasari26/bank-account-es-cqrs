@@ -6,6 +6,7 @@ class BankAccount {
         this.currency = 'USD';
         this.status = 'OPEN';
         this.version = 0;
+        this.seenTransactions = new Set();
     }
 
     static create(accountId, ownerName, initialBalance, currency) {
@@ -39,10 +40,18 @@ class BankAccount {
             default:
                 console.warn(`Unknown event type: ${event_type}`);
         }
+
+        if (event_data.transactionId) {
+            this.seenTransactions.add(event_data.transactionId);
+        }
         this.version = event.event_number;
     }
 
     // Business logic validations
+    isDuplicate(transactionId) {
+        return transactionId && this.seenTransactions.has(transactionId);
+    }
+
     validateDeposit(amount) {
         if (this.status === 'CLOSED') {
             throw new Error('Account is closed');

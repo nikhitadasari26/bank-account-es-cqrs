@@ -64,6 +64,10 @@ async function handleDeposit(accountId, command) {
         throw error;
     }
 
+    if (account.isDuplicate(transactionId)) {
+        return { message: 'Deposit already processed' };
+    }
+
     try {
         account.validateDeposit(amount);
     } catch (e) {
@@ -91,6 +95,10 @@ async function handleWithdraw(accountId, command) {
         const error = new Error('Account not found');
         error.status = 404;
         throw error;
+    }
+
+    if (account.isDuplicate(transactionId)) {
+        return { message: 'Withdrawal already processed' };
     }
 
     try {

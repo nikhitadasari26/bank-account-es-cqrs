@@ -46,3 +46,13 @@ CREATE TABLE IF NOT EXISTS transaction_history (
 );
 
 CREATE INDEX IF NOT EXISTS idx_transaction_history_account_id ON transaction_history(account_id);
+
+-- projection_offsets: tracks how far each projection has processed the global event stream
+CREATE TABLE IF NOT EXISTS projection_offsets (
+    projection_name VARCHAR(255) PRIMARY KEY,
+    last_processed_global_id INTEGER NOT NULL DEFAULT 0
+);
+
+-- Initialize offsets
+INSERT INTO projection_offsets (projection_name, last_processed_global_id) VALUES ('AccountSummaries', 0) ON CONFLICT DO NOTHING;
+INSERT INTO projection_offsets (projection_name, last_processed_global_id) VALUES ('TransactionHistory', 0) ON CONFLICT DO NOTHING;

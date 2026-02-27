@@ -102,18 +102,24 @@ async function getProjectionsStatus() {
     const totalEventsInStore = parseInt(storeCountRes.rows[0].count);
     const lastGlobalId = parseInt(storeCountRes.rows[0].max || 0);
 
+    const offsetsRes = await db.query('SELECT * FROM projection_offsets');
+    const offsets = {};
+    offsetsRes.rows.forEach(r => {
+        offsets[r.projection_name] = parseInt(r.last_processed_global_id);
+    });
+
     return {
         totalEventsInStore,
         projections: [
             {
                 name: "AccountSummaries",
-                lastProcessedEventNumberGlobal: lastGlobalId,
-                lag: 0
+                lastProcessedEventNumberGlobal: offsets["AccountSummaries"] || 0,
+                lag: lastGlobalId - (offsets["AccountSummaries"] || 0)
             },
             {
                 name: "TransactionHistory",
-                lastProcessedEventNumberGlobal: lastGlobalId,
-                lag: 0
+                lastProcessedEventNumberGlobal: offsets["TransactionHistory"] || 0,
+                lag: lastGlobalId - (offsets["TransactionHistory"] || 0)
             }
         ]
     };

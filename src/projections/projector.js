@@ -82,6 +82,23 @@ async function projectEvent(event) {
                 break;
         }
 
+        // Update offsets
+        await client.query(
+            `UPDATE projection_offsets 
+       SET last_processed_global_id = $1 
+       WHERE projection_name = 'AccountSummaries'`,
+            [event.global_id]
+        );
+
+        if (event_type === 'MoneyDeposited' || event_type === 'MoneyWithdrawn') {
+            await client.query(
+                `UPDATE projection_offsets 
+         SET last_processed_global_id = $1 
+         WHERE projection_name = 'TransactionHistory'`,
+                [event.global_id]
+            );
+        }
+
         await client.query('COMMIT');
     } catch (e) {
         await client.query('ROLLBACK');
