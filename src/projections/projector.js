@@ -114,6 +114,7 @@ async function rebuildProjections() {
         await client.query('BEGIN');
         await client.query('DELETE FROM account_summaries');
         await client.query('DELETE FROM transaction_history');
+        await client.query('UPDATE projection_offsets SET last_processed_global_id = 0');
 
         const eventsRes = await client.query('SELECT * FROM events ORDER BY timestamp ASC, event_number ASC');
         const events = eventsRes.rows;
